@@ -1,3 +1,4 @@
+# coding=utf-8
 # type: ignore[assignment, operator]
 """
 Contains classes to compile Python-Nim Extension modules, import those modules,
@@ -7,7 +8,6 @@ In addition, distribution of libraries using Nim code via Nimporter can easily
 compile those modules to C and bundle into a source or binary distribution so
 users of the library don't have to install a Nim compiler.
 """
-
 import sys, os, subprocess, importlib, hashlib, tempfile, shutil
 from warnings import warn as show_warning
 from pathlib import Path
@@ -15,9 +15,9 @@ from contextlib import contextmanager
 from setuptools import Extension
 
 # NOTE(pebaz): https://stackoverflow.com/questions/39660934/error-when-using-importlib-util-to-check-for-library/39661116
-from importlib import util
-from _frozen_importlib import ModuleSpec
-from _frozen_importlib_external import _NamespacePath
+# from importlib2 import util   # windows上执行出错: ImportError: cannot import name _fixers, linux上执行出错: AttributeError: find_module, 使用则报NotImplementedError
+# from _frozen_importlib import ModuleSpec
+# from _frozen_importlib_external import _NamespacePath
 from setuptools.extension import Extension
 from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union, Callable, Iterable
 
@@ -297,7 +297,7 @@ class NimCompiler:
         if errors: raise NimInvokeException(Path(), nimble_args, errors, out)
 
     @staticmethod
-    def get_import_prefix(module_path: Path, root):
+    def get_import_prefix(module_path, root):
         """
         Computes the proper name of a Nim module amid a given Python project.
 
@@ -605,7 +605,7 @@ class NimCompiler:
         return nimbase_dest
 
     @classmethod
-    def compile_nim_extension(cls, module_path, root, *, library):
+    def compile_nim_extension(cls, module_path, root, library):
         """
         Compiles/returns an Extension and installs `.nimble` dependencies.
 
@@ -664,7 +664,7 @@ class NimCompiler:
         return extension
 
     @classmethod
-    def compile_nim_code(cls, module_path, build_artifact, *, library):
+    def compile_nim_code(cls, module_path, build_artifact, library):
         """
         Returns a Spec object so a Nim module/library can be directly imported.
 
@@ -892,7 +892,7 @@ class Nimporter:
         return module
 
     @classmethod
-    def import_nim_code(cls, fullname, path, *,
+    def import_nim_code(cls, fullname, path,
                         library):
         """
         Search for, compile, and return Spec for module loaders.
@@ -1018,7 +1018,7 @@ class Nimporter:
                 'above information along with your description of the issue.\n'
             )
 
-            raise NimporterException(error_message) from import_error
+            raise NimporterException(error_message), None, sys.exc_info()[2] #from import_error
 
     @classmethod
     def should_compile(cls, module_path):
@@ -1219,7 +1219,7 @@ class Nimporter:
         return extensions
 
 
-def register_importer(list_position):
+def register_importer(list_position1):
     """
     Adds a given importer class to `sys.meta_path` at a given position.
 
@@ -1228,9 +1228,9 @@ def register_importer(list_position):
     Args:
         list_position(int): the index in `sys.meta_path` to place the importer.
     """
-
+    global list_position;list_position = list_position1
     def decorator(importer):
-        nonlocal list_position
+        global list_position
 
         # Make the list_position act like how a list is normally indexed
         if list_position < 0:
@@ -1240,7 +1240,7 @@ def register_importer(list_position):
 
         # Ensure that Nim files won't be passed up because of other Importers.
         sys.path_importer_cache.clear()
-        importlib.invalidate_caches()
+        # importlib.invalidate_caches()
 
         return importer
 
