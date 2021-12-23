@@ -27,7 +27,7 @@ PathParts = Union[Tuple[str, str, str], Tuple[str], Tuple[str, str]]
 
 
 @contextmanager
-def cd(path: Union[Path, str]) -> Iterator[Union[Path, str]]:
+def cd(path: Union[Path, str]):
     "Convenience function to step in and out of a directory temporarily."
     cwd = os.getcwd()
     os.chdir(path)
@@ -50,7 +50,7 @@ class NimCompileException(NimporterException):
     NOTE: The provided message must contain the string: 'Error:'
     """
 
-    def __init__(self, msg: str) -> None:
+    def __init__(self, msg: str):
         if sys.platform == 'win32' and 'external' in msg:
             self.message = msg
 
@@ -86,7 +86,7 @@ class NimCompileException(NimporterException):
             except:
                 self.message = msg
 
-    def __str__(self) -> str:
+    def __str__(self):
         "Return the string representation of the given compiler error."
         return self.message
 
@@ -94,17 +94,17 @@ class NimCompileException(NimporterException):
 class NimInvokeException(NimporterException):
     "Exception for when a given CLI command fails."
 
-    def __init__(self, cwd: Path, cmd_line: List[str], errors: List[str], out: str='') -> None:
+    def __init__(self, cwd: Path, cmd_line: List[str], errors: List[str], out: str=''):
         self.cwd = Path(cwd).resolve()
         self.cmd_line = cmd_line
         self.errors = errors
         self.out = out
 
-    def get_output(self) -> str:
+    def get_output(self):
         "Return the output (if any) of the CLI command that caused the error."
         return self.out
 
-    def __str__(self) -> str:
+    def __str__(self):
         "Return the string representation of the error."
         cmd = self.cmd_line[0]
         message = f'Failed to run command: {cmd}\n\n'
@@ -154,7 +154,7 @@ class NimCompiler:
     EXT_DIR = 'nim-extensions'
 
     @classmethod
-    def get_python_c_compiler_version(cls) -> str:
+    def get_python_c_compiler_version(cls):
         """
         Gets the compiler name and version that was used to compile Python.
 
@@ -166,7 +166,7 @@ class NimCompiler:
         return sys.version.split('[').pop()[:-1]
 
     @classmethod
-    def get_python_c_compiler_name(cls) -> str:
+    def get_python_c_compiler_name(cls):
         """
         Gets only the compiler name used to compile Python.
 
@@ -180,7 +180,7 @@ class NimCompiler:
         return cls.get_python_c_compiler_version().split()[0].lower()
 
     @classmethod
-    def get_installed_compilers(cls) -> Dict[str, Path]:
+    def get_installed_compilers(cls):
         """
         Gets the list of installed compilers.
 
@@ -201,7 +201,7 @@ class NimCompiler:
         }
 
     @classmethod
-    def get_compatible_compiler(cls) -> str:
+    def get_compatible_compiler(cls):
         """
         Gets compatible compiler name for the running Python instance.
 
@@ -214,7 +214,7 @@ class NimCompiler:
             return python_compiler
 
     @classmethod
-    def build_artifact(cls, module_path: Path) -> Path:
+    def build_artifact(cls, module_path: Path):
         """
         Returns the Path to the built .PYD or .SO. Does not imply it has already
         been built.
@@ -231,7 +231,7 @@ class NimCompiler:
         return (cls.pycache_dir(module_path) / filename).resolve()
 
     @classmethod
-    def pycache_dir(cls, module_path: Path) -> Path:
+    def pycache_dir(cls, module_path: Path):
         """
         Return the `__pycache__` directory as a Path.
 
@@ -251,7 +251,7 @@ class NimCompiler:
             return (module_path.parent / '__pycache__').resolve()
 
     @classmethod
-    def invoke_compiler(cls, nim_args: List[str]) -> CompilerResults:
+    def invoke_compiler(cls, nim_args: List[str]):
         """
         Invokes the compiler (or any executable) and returns the output.
 
@@ -281,7 +281,7 @@ class NimCompiler:
         return out, errors, warnings, hints
 
     @classmethod
-    def ensure_nimpy(cls) -> None:
+    def ensure_nimpy(cls):
         """
         Makes sure that the Nimpy Nim library is installed.
 
@@ -301,7 +301,7 @@ class NimCompiler:
         if errors: raise NimInvokeException(Path(), nimble_args, errors, out)
 
     @staticmethod
-    def get_import_prefix(module_path: Path, root: Path) -> PathParts:
+    def get_import_prefix(module_path: Path, root: Path):
         """
         Computes the proper name of a Nim module amid a given Python project.
 
@@ -325,7 +325,7 @@ class NimCompiler:
         return full_path.parts[len(root_path.parts):]
 
     @classmethod
-    def find_nim_std_lib(cls) -> Optional[Path]:
+    def find_nim_std_lib(cls):
         """
         Finds the path to the `lib/` directory within a given Nim installation.
 
@@ -384,7 +384,7 @@ class NimCompiler:
         return result.resolve().absolute()
 
     @classmethod
-    def has_nim_config(cls, library_path: Path) -> bool:
+    def has_nim_config(cls, library_path: Path):
         """
 
         Args:
@@ -395,7 +395,7 @@ class NimCompiler:
         return any(library_path.glob('*.nim.cfg')) or any(library_path.glob('*.nims'))
 
     @classmethod
-    def check_paths(cls, library: bool, module_path: Path) -> Tuple[Path, Path]:
+    def check_paths(cls, library: bool, module_path: Path):
         """
 
         Args:
@@ -422,7 +422,7 @@ class NimCompiler:
         return library_path, module_path
 
     @classmethod
-    def check_deprecated_switches_py(cls, library_path: Path) -> None:
+    def check_deprecated_switches_py(cls, library_path: Path):
         """
 
         Args:
@@ -440,7 +440,7 @@ class NimCompiler:
         return
 
     @classmethod
-    def check_prerequisites(cls, library: bool, module_path: Path, compile_type: str) -> None:
+    def check_prerequisites(cls, library: bool, module_path: Path, compile_type: str):
         """
 
         Args:
@@ -470,7 +470,7 @@ class NimCompiler:
 
     @classmethod
     def check_compile_errors(cls, errors: List[str], library: bool, nim_args: List[str],
-                             output: str, tmp_cwd: Path, warnings: List[str]) -> None:
+                             output: str, tmp_cwd: Path, warnings: List[str]):
         """
 
         Args:
@@ -494,7 +494,7 @@ class NimCompiler:
         return
 
     @classmethod
-    def record_build_directories(cls, import_path: str, root: Path) -> Tuple[Path, Path]:
+    def record_build_directories(cls, import_path: str, root: Path):
         """
 
         Args:
@@ -514,7 +514,7 @@ class NimCompiler:
         return build_dir, build_dir_relative
 
     @classmethod
-    def coerce_import_path(cls, library: bool, module_name: str, module_path: Path, root: Path) -> str:
+    def coerce_import_path(cls, library: bool, module_name: str, module_path: Path, root: Path):
         """
 
         Args:
@@ -535,7 +535,7 @@ class NimCompiler:
 
     @classmethod
     def construct_cli_args(cls, build_dir: Path, library: bool, library_path: Path,
-                           module_path: Path, compile_type: str) -> List[str]:
+                           module_path: Path, compile_type: str):
         """
 
         Args:
@@ -571,7 +571,7 @@ class NimCompiler:
         return nim_args
 
     @classmethod
-    def write_distribution_manifest(cls, nimbase_dest: Path, root: Path) -> None:
+    def write_distribution_manifest(cls, nimbase_dest: Path, root: Path):
         """
 
         Args:
@@ -590,7 +590,7 @@ class NimCompiler:
         return
 
     @classmethod
-    def copy_headers(cls, build_dir_relative: Path) -> Path:
+    def copy_headers(cls, build_dir_relative: Path):
         """
 
         Args:
@@ -609,7 +609,7 @@ class NimCompiler:
         return nimbase_dest
 
     @classmethod
-    def compile_nim_extension(cls, module_path: Path, root: Optional[Path], *, library: bool) -> Extension:
+    def compile_nim_extension(cls, module_path: Path, root: Optional[Path], *, library: bool):
         """
         Compiles/returns an Extension and installs `.nimble` dependencies.
 
@@ -668,7 +668,7 @@ class NimCompiler:
         return extension
 
     @classmethod
-    def compile_nim_code(cls, module_path: Path, build_artifact: Optional[Path], *, library: bool) -> Path:
+    def compile_nim_code(cls, module_path: Path, build_artifact: Optional[Path], *, library: bool):
         """
         Returns a Spec object so a Nim module/library can be directly imported.
 
@@ -722,7 +722,7 @@ class Nimporter:
     IGNORE_CACHE = False
 
     @classmethod
-    def hash_filename(cls, module_path: Path) -> Path:
+    def hash_filename(cls, module_path: Path):
         """
         Gets the filename that should contain a given module's hash.
 
@@ -737,7 +737,7 @@ class Nimporter:
         )
 
     @classmethod
-    def is_cache(cls, module_path: Path) -> bool:
+    def is_cache(cls, module_path: Path):
         """
         Determines if the `__pycache__` dir for a given Nim module exists.
 
@@ -751,7 +751,7 @@ class Nimporter:
         return NimCompiler.pycache_dir(module_path).exists()
 
     @classmethod
-    def is_hashed(cls, module_path: Path) -> bool:
+    def is_hashed(cls, module_path: Path):
         """
         Determines if a given Nim module has already been hashed.
 
@@ -765,7 +765,7 @@ class Nimporter:
         return cls.hash_filename(module_path).exists()
 
     @classmethod
-    def is_built(cls, module_path: Path) -> bool:
+    def is_built(cls, module_path: Path):
         """
         Determines if a given Nim module has already been built.
 
@@ -779,7 +779,7 @@ class Nimporter:
         return NimCompiler.build_artifact(module_path).exists()
 
     @classmethod
-    def get_hash(cls, module_path: Path) -> bytes:
+    def get_hash(cls, module_path: Path):
         """
         Gathers the hash for a given Nim module.
 
@@ -798,7 +798,7 @@ class Nimporter:
         return cls.hash_filename(module_path).read_bytes()
 
     @classmethod
-    def hash_changed(cls, module_path: Path) -> bool:
+    def hash_changed(cls, module_path: Path):
         """
         Determines if a module has been modified.
 
@@ -814,7 +814,7 @@ class Nimporter:
         return cls.get_hash(module_path) != cls.hash_file(module_path)
 
     @staticmethod
-    def hash_file(module_path: Path) -> bytes:
+    def hash_file(module_path: Path):
         """
         Convenience function to hash a given file.
 
@@ -834,7 +834,7 @@ class Nimporter:
         return hasher.digest()
 
     @classmethod
-    def update_hash(cls, module_path: Path) -> None:
+    def update_hash(cls, module_path: Path):
         """
         Updates the hash file associated with a given Nim module.
 
@@ -897,7 +897,7 @@ class Nimporter:
 
     @classmethod
     def import_nim_code(cls, fullname: str, path: Optional[Union[List[str], _NamespacePath]], *,
-                        library: bool) -> Optional[ModuleSpec]:
+                        library: bool):
         """
         Search for, compile, and return Spec for module loaders.
 
@@ -959,7 +959,7 @@ class Nimporter:
             return spec
 
     @classmethod
-    def __validate_spec(cls, spec: ModuleSpec) -> None:
+    def __validate_spec(cls, spec: ModuleSpec):
         """
         Validates that a given Nim extension can be successfully imported.
 
@@ -1025,7 +1025,7 @@ class Nimporter:
             raise NimporterException(error_message) from import_error
 
     @classmethod
-    def should_compile(cls, module_path: Path) -> bool:
+    def should_compile(cls, module_path: Path):
         """
         Determines if a module should be rebuilt using only the path to it.
 
@@ -1050,7 +1050,7 @@ class Nimporter:
         ])
 
     @classmethod
-    def _find_extensions(cls, path: Path, exclude_dirs: Iterable = set()) -> List[Path]:
+    def _find_extensions(cls, path: Path, exclude_dirs: Iterable = set()):
         """
         Recurses through a given path to find all Nim modules or libraries.
 
@@ -1096,7 +1096,7 @@ class Nimporter:
         return nim_exts
 
     @classmethod
-    def _build_nim_extension(cls, path: Path, root: Path) -> Extension:
+    def _build_nim_extension(cls, path: Path, root: Path):
         """
         Convenience function to create an Extension object from a given path.
 
@@ -1113,7 +1113,7 @@ class Nimporter:
         )
 
     @classmethod
-    def check_nim_extensions(cls, root: Path) -> bool:
+    def check_nim_extensions(cls, root: Path):
         """
         if not cls.check_nim_extensions(root):
             ...
@@ -1123,7 +1123,7 @@ class Nimporter:
         return (root / NimCompiler.EXT_DIR).exists()
 
     @classmethod
-    def get_nim_extensions(cls, root: Path) -> List[Extension]:
+    def get_nim_extensions(cls, root: Path):
         """
         Convenience function to look for previously compiled Nim Extensions.
 
@@ -1157,7 +1157,7 @@ class Nimporter:
 
     @classmethod
     def build_nim_extensions(cls, root: Optional[Path] = None, exclude_dirs: List[Any] = [],
-                             danger: bool = False) -> List[Extension]:
+                             danger: bool = False):
         """
         Gathers all Nim Extensions by recursing through a Python project.
 
@@ -1223,7 +1223,7 @@ class Nimporter:
         return extensions
 
 
-def register_importer(list_position: int) -> Callable:
+def register_importer(list_position: int):
     """
     Adds a given importer class to `sys.meta_path` at a given position.
 
@@ -1265,7 +1265,7 @@ class NimModImporter:
     """
 
     @classmethod
-    def find_spec(cls, fullname: str, path: Optional[_NamespacePath] = None, target: None = None) -> ModuleSpec:
+    def find_spec(cls, fullname: str, path: Optional[_NamespacePath] = None, target: None = None):
         return Nimporter.import_nim_code(fullname, path, library=False)
 
 
@@ -1296,7 +1296,7 @@ class NimLibImporter:
     """
 
     @classmethod
-    def find_spec(cls, fullname: str, path: Optional[_NamespacePath] = None, target: None = None) -> Optional[ModuleSpec]:
+    def find_spec(cls, fullname: str, path: Optional[_NamespacePath] = None, target: None = None):
         return Nimporter.import_nim_code(fullname, path, library=True)
 
 
