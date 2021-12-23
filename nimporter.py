@@ -67,17 +67,17 @@ class NimCompileException(NimporterException):
                         line += 1
 
                         if line == src_line:
-                            message += f' -> {each_line}'
+                            message += ' -> '+each_line
 
                         elif line > src_line + 2:
                             break
 
                         elif line > src_line - 3:
-                            message += f' |  {each_line}'
+                            message += ' |  '+each_line
 
                 self.message = message.rstrip() + (
-                    f'\n\nAt {nim_module.absolute()} '
-                    f'{line}:{col}'
+                    '\n\nAt '+nim_module.absolute()+' '
+                    +line+':'+col
                 )
             except:
                 self.message = msg
@@ -103,13 +103,13 @@ class NimInvokeException(NimporterException):
     def __str__(self):
         "Return the string representation of the error."
         cmd = self.cmd_line[0]
-        message = f'Failed to run command: {cmd}\n\n'
-        message += f'Current Directory:\n    {self.cwd}\n\n'
-        message += f'Error Message:\n'
+        message = 'Failed to run command: '+cmd+'\n\n'
+        message += 'Current Directory:\n    '+self.cwd+'\n\n'
+        message += 'Error Message:\n'
         message += '\n    '.join(self.errors) + '\n\n'
-        message += f'Command Line Arguments:\n    {cmd}\n'
+        message += 'Command Line Arguments:\n    '+cmd+'\n'
         for arg in self.cmd_line[1:]:
-            message += f'        {arg}\n'
+            message += '        '+arg+'\n'
         return message
 
 
@@ -349,7 +349,7 @@ class NimCompiler:
                     )
 
                 version_string = nim_ver.split()[3]
-                stdlib = choosenim_dir / f'nim-{version_string}/lib'
+                stdlib = choosenim_dir / 'nim-'+version_string+'/lib'
 
                 if (stdlib / 'system.nim').exists():
                     return stdlib.resolve().absolute()
@@ -409,11 +409,11 @@ class NimCompiler:
             library_path = module_path.resolve()
             module_path = library_path / (library_path.name + '.nim')
         else:
-            raise TypeError(f'Invalid path: {module_path}')
+            raise TypeError('Invalid path: '+module_path)
 
         if library and not any(library_path.glob('*.nimble')):
             raise NimporterException(
-                f"Library: {library_path} doesn't contain a .nimble file"
+                "Library: "+library_path+" doesn't contain a .nimble file"
             )
         return library_path, module_path
 
@@ -450,7 +450,7 @@ class NimCompiler:
         """
         if not module_path.exists():
             raise NimporterException(
-                f'{module_path.absolute()} does not exist.'
+                module_path.absolute()+' does not exist.'
             )
 
         if compile_type == 'code':
@@ -552,7 +552,7 @@ class NimCompiler:
             build_dir_tag = '--nimcache'
             exe = ['nimble' if library else 'nim', 'cc', '-c']
         else:
-            raise ValueError(f'Invalid compile type: {compile_type}')
+            raise ValueError('Invalid compile type: '+compile_type)
 
         if cls.has_nim_config(library_path):
             compile_tags = []
@@ -561,7 +561,7 @@ class NimCompiler:
 
         nim_args = (
                 exe + compile_tags +
-                [f'{build_dir_tag}:{build_dir}', f'{module_path}'] +
+                [build_dir_tag+':'+build_dir, module_path] +
                 (['--accept'] if library else [])
         )
         return nim_args
@@ -582,7 +582,7 @@ class NimCompiler:
         if not manifest.exists():
             manifest.write_text('# NIMPORTER BUNDLE\n')
         with manifest.open('a') as file:
-            file.write(f'include {nimbase_dest}\n')
+            file.write('include '+nimbase_dest+'\n')
         return
 
     @classmethod
@@ -790,7 +790,7 @@ class Nimporter:
         """
         if not cls.is_hashed(module_path):
             path = module_path.absolute()
-            raise NimporterException(f'Module {path} has not yet been hashed.')
+            raise NimporterException('Module '+path+' has not yet been hashed.')
         return cls.hash_filename(module_path).read_bytes()
 
     @classmethod
@@ -886,7 +886,7 @@ class Nimporter:
                 cls.IGNORE_CACHE = tmp
 
         if not spec:
-            raise ImportError(f'No module named {fullname}')
+            raise ImportError('No module named '+fullname)
 
         module = spec.loader.create_module(spec)
         return module
@@ -911,7 +911,7 @@ class Nimporter:
         """
         parts = fullname.split('.')
         module = parts[-1] if library else parts.pop()
-        module_file = f'{module}.nim'
+        module_file = module+'.nim'
         path = list(path) if path else []  # Ensure that path is always a list
 
         # NOTE(pebaz): Package is different based only on `library`
@@ -1007,15 +1007,15 @@ class Nimporter:
                 cc_ver = '<No compatible C compiler installed>'
 
             error_message = (
-                f'Error importing {spec.origin}\n'
-                f'Error Message:\n\n    {import_error}\n\n'
-                f'Python Version:\n\n    {py_ver}\n\n'
-                f'Nim Version:\n\n    {nim_ver}\n\n'
-                f'CC Version:\n\n    {cc_ver}\n\n'
-                f'Installed CCs:\n\n    {all_ccs}\n\n'
-                f'Please help improve Nimporter by opening a bug report at: '
-                f'https://github.com/Pebaz/nimporter/issues/new and submit the '
-                f'above information along with your description of the issue.\n'
+                'Error importing '+spec.origin+'\n'
+                'Error Message:\n\n    '+import_error+'\n\n'
+                'Python Version:\n\n    '+py_ver+'\n\n'
+                'Nim Version:\n\n    '+nim_ver+'\n\n'
+                'CC Version:\n\n    '+cc_ver+'\n\n'
+                'Installed CCs:\n\n    '+all_ccs+'\n\n'
+                'Please help improve Nimporter by opening a bug report at: '
+                'https://github.com/Pebaz/nimporter/issues/new and submit the '
+                'above information along with your description of the issue.\n'
             )
 
             raise NimporterException(error_message) from import_error
